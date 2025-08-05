@@ -6,7 +6,7 @@ local Moments = G0.Moments
 local Euler = G0.Moments.Eq.Euler
 -- local const = require "Lib.Constants"
 
-local Te_Ti = 1.0 -- ratio of electron to ion temperaute (up to date, paper, but he has it as 10. in og code)
+local Te_Ti = 10.0 -- ratio of electron to ion temperaute (up to date, paper, but he has it as 10. in og code)
 --local machNum = 1.5 -- Mach number computed from ion thermal speed
 local n0 = 1.0 -- initial number density (up to og petr)
 
