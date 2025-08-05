@@ -44,6 +44,37 @@ end
 
 -- Load data for initial Robertson profiles
 -- I removed this 7/30/25 <3
+-- Oh honey, so young and innocent. you can't do that. You must suffer. 8/4/2025
+
+local fh = io.open("ni.txt")
+assert(fh, "File ni.txt not found")
+local n_i, i = {}, 1
+for l in fh:lines() do
+   n_i[i] = l
+   i = i+1
+end
+
+local fh = io.open("ne.txt")
+local n_e, i = {}, 1
+for l in fh:lines() do
+   n_e[i] = l
+   i = i+1
+end
+
+local fh = io.open("E.txt")
+local E0, i = {}, 1
+for l in fh:lines() do
+   E0[i] = l
+   i = i+1
+end
+
+local fh = io.open("ui.txt")
+local ui, i = {}, 1
+for l in fh:lines() do
+   ui[i] = l
+   i = i+1
+end
+
 
 --------------------------------------------------------------------------------
 -- App construction
@@ -63,8 +94,14 @@ local momentApp = Moments.App.new {
       equation = Euler.new { gasGamma = gasGamma },
       equationInv = Euler.new { gasGamma = gasGamma, numericalFlux = "lax" },
       init = function (t, z)
-         local rhoe = n0 * me
-         local e = n0 * Te / (gasGamma - 1.0)
+         local x = z[1]
+         local dx = L / Nx
+         local idx = math.floor(x / dx) + 1
+         if idx < 1 then idx = 1 end
+         if idx > Nx then idx = Nx end
+
+         local rhoe = n_e[idx] * me
+         local e = n_e[idx] * Te / (gasGamma - 1.0)
          return rhoe, 0.0, 0.0, 0.0, e
       end,
 
@@ -77,9 +114,15 @@ local momentApp = Moments.App.new {
       equation = Euler.new { gasGamma = gasGamma },
       equationInv = Euler.new { gasGamma = gasGamma, numericalFlux = "lax" },
       init = function (t, z)
-         local rhoi = n0 * mi
-         local rhoiui = rhoi * vd_i -- vd_i = 0 by default
-         local e = n0 * Ti / (gasGamma - 1.0)
+         local x = z[1]
+         local dx = L / Nx
+         local idx = math.floor(x / dx) + 1
+         if idx < 1 then idx = 1 end
+         if idx > Nx then idx = Nx end
+
+         local rhoi = n_i[idx] * mi         
+         local rhoiui = rhoi * ui[idx]          
+         local e = n0*Ti/(gasGamma-1.0)
          return rhoi, rhoiui, 0.0, 0.0, e
       end,
       evolve = true,
@@ -92,13 +135,14 @@ local momentApp = Moments.App.new {
    field = Moments.Field.new {
       epsilon0 = epsilon0, mu0 = mu0,
       init = function (t, z)
-          local Ex = 0.0 -- Total electric field (x-direction).
-          local Ey = 0.0 -- Total electric field (y-direction).
-          local Ez = 0.0 -- Total electric field (z-direction).
-          local Bx = 0.0 -- Total magnetic field (x-direction).
-          local By = 0.0 -- Total magnetic field (y-direction).
-          local Bz = 0.0 -- Total magnetic field (z-direction).
-          return Ex, Ey, Ez, Bx, By, Bz, 0.0, 0.0 -- Last two are correction potentials
+         local x = z[1] 
+         local dx = L / Nx
+         local idx = math.floor(x / dx) + 1
+         if idx < 1 then idx = 1 end
+         if idx > Nx then idx = Nx end
+           
+         local Ex = E0[idx] * 1.0        
+         return Ex, 0.0, 0.0, 0.0, 0.0, 0.0
       end,
       
       evolve = true,
