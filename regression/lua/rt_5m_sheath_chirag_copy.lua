@@ -6,7 +6,7 @@ local Moments = G0.Moments
 local Euler = G0.Moments.Eq.Euler
 -- local const = require "Lib.Constants"
 
-local Te_Ti = 1.0 -- ratio of electron to ion temperaute
+local Te_Ti = 10.0 -- ratio of electron to ion temperaute
 --local machNum = 1.5 -- Mach number computed from ion thermal speed
 local n0 = 1.0 -- initial number density
 
@@ -18,7 +18,7 @@ local Te = 1.0 -- 1.5*const.ELEMENTARY_CHARGE
 local vthe = math.sqrt(Te/me)
 
 local mi, qi = 1836.0, 1.0 -- 39.948*const.MASS_UNIT, const.ELEMENTARY_CHARGE -- argon
-local Ti = 1.0
+local Ti = Te/Te_Ti
 local vthi = math.sqrt(Ti/mi)
 
 local epsilon0 = 1.0 -- const.EPSILON0
@@ -48,7 +48,7 @@ end
 --------------------------------------------------------------------------------
 -- App construction
 --------------------------------------------------------------------------------
-local app = Moments.App.new {
+local momentApp = Moments.App.new {
    logToFile = false,
    tEnd = tEnd,
    nFrame = nFrame,
@@ -92,13 +92,19 @@ local app = Moments.App.new {
    field = Moments.Field.new {
       epsilon0 = epsilon0, mu0 = mu0,
       init = function (t, z)
-         return 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+          local Ex = 0.0 -- Total electric field (x-direction).
+          local Ey = 0.0 -- Total electric field (y-direction).
+          local Ez = 0.0 -- Total electric field (z-direction).
+          local Bx = 0.0 -- Total magnetic field (x-direction).
+          local By = 0.0 -- Total magnetic field (y-direction).
+          local Bz = 0.0 -- Total magnetic field (z-direction).
+          return Ex, Ey, Ez, Bx, By, Bz, 0.0, 0.0 -- Last two are correction potentials
       end,
-
+      
       evolve = true,
-      bcx = { Moments.Field.bcOpen, Moments.Field.bcReflect },
+      bcx = { G0.FieldBc.bcCopy, G0.FieldBc.bcWall},
    },
 
 }
 
-app:run()
+momentApp:run()
